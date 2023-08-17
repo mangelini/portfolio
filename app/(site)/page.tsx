@@ -1,5 +1,6 @@
 import { getProfile } from "@/sanity/sanity.query";
 import type { ProfileType } from "@/types";
+import Image from "next/image";
 import HeroSvg from "./icons/HeroSvg";
 import Job from "./components/Job";
 
@@ -12,10 +13,24 @@ export default async function Home() {
         {profile &&
           profile.map((data) => (
             <div key={data._id} className="lg:max-w-2xl max-w-2xl">
+              <div className="flex items-center gap-x-6 my-2">
+                <div className="min-h-[70px] min-w-[70px] rounded-full overflow-clip relative mb-4">
+                  <Image
+                    className="object-cover"
+                    src={data.profileImage.image}
+                    alt={data.profileImage.alt}
+                    fill
+                  />
+                </div>
+
+                <h4 className="text-lg font-bold tracking-tight sm:text-xl mb-6 lg:leading-[3.7rem] leading-tight lg:min-w-[700px] min-w-full">
+                  {data.fullName}
+                </h4>
+              </div>
               <h1 className="text-3xl font-bold tracking-tight sm:text-5xl mb-6 lg:leading-[3.7rem] leading-tight lg:min-w-[700px] min-w-full">
                 {data.headline}
               </h1>
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base dark:text-zinc-400 text-zinc-600 leading-relaxed">
                 {data.shortBio}
               </p>
               <ul className="flex items-center gap-x-6 my-10">
