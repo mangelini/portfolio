@@ -1,15 +1,23 @@
 import Image from "next/image";
 import { Metadata } from "next";
+
 import { getSingleProject } from "@/sanity/sanity.query";
+import urlBuilder from "@sanity/image-url";
+import { getImageDimensions } from "@sanity/asset-utils";
+import ts from "refractor/lang/typescript";
+
 import type { ProjectType } from "@/types";
-import { PortableText } from "@portabletext/react";
+import { PortableText, PortableTextComponents } from "@portabletext/react";
 import fallBackImage from "@/public/project.png";
+import Refractor from "react-refractor";
 
 type Props = {
   params: {
     project: string;
   };
 };
+
+Refractor.registerLanguage(ts);
 
 // Dynamic metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -28,6 +36,73 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 }
+
+const SampleImageComponent = ({ value }: { value: any }) => {
+  const { width, height } = getImageDimensions(value);
+  return (
+    <img
+      src={urlBuilder().image(value).width(800).fit("max").auto("format").url()}
+      alt={value.alt || " "}
+      loading="lazy"
+      style={{
+        // Avoid jumping around with aspect-ratio CSS property
+        aspectRatio: width / height,
+      }}
+    />
+  );
+};
+
+const Code = (props: any) => (
+  <Refractor
+    language={props.value.language}
+    value={props.value.code}
+    markers={props.value.highlightedLines}
+  />
+);
+
+const components: PortableTextComponents = {
+  types: {
+    image: SampleImageComponent,
+    code: Code,
+  },
+  block: {
+    h3: ({ children }) => <h3 className="text-2xl font-bold">{children}</h3>,
+    h4: ({ children }) => (
+      <h4 className="text-2xl font-semibold">{children}</h4>
+    ),
+    bullet: ({ children }) => <ul className="mt-xl">{children}</ul>,
+  },
+  list: {
+    // Ex. 1: customizing common list types
+    bullet: ({ children }) => <ul className="mt-xl">{children}</ul>,
+    number: ({ children }) => <ol className="mt-lg">{children}</ol>,
+
+    // Ex. 2: rendering custom lists
+    checkmarks: ({ children }) => (
+      <ol className="m-auto text-lg">{children}</ol>
+    ),
+  },
+  marks: {
+    em: ({ children }) => (
+      <em className="text-gray-600 font-semibold">{children}</em>
+    ),
+    link: ({ value, children }) => {
+      const target = (value?.href || "").startsWith("http")
+        ? "_blank"
+        : undefined;
+      return (
+        <a
+          href={value?.href}
+          target={target}
+          rel={target === "_blank" && "noindex nofollow"}
+          className="text-purple-400"
+        >
+          {children}
+        </a>
+      );
+    },
+  },
+};
 
 export default async function Project({ params }: Props) {
   const slug = params.project;
@@ -59,7 +134,7 @@ export default async function Project({ params }: Props) {
         />
 
         <div className="flex flex-col gap-y-6 mt-8 leading-7 dark:text-zinc-400 text-zinc-600">
-          <PortableText value={project.description} />
+          <PortableText value={project.description} components={components} />
         </div>
       </div>
     </main>
