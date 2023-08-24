@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const SampleImageComponent = ({ value }: { value: any }) => {
   const { width, height } = getImageDimensions(value);
   return (
-    <img
+    <Image
       src={urlBuilder().image(value).width(800).fit("max").auto("format").url()}
       alt={value.alt || " "}
       loading="lazy"
@@ -94,7 +94,6 @@ const components: PortableTextComponents = {
         <a
           href={value?.href}
           target={target}
-          rel={target === "_blank" && "noindex nofollow"}
           className="text-purple-400"
         >
           {children}
